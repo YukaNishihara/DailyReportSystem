@@ -21,6 +21,10 @@ public enum ErrorKinds {
     // チェックOK
     CHECK_OK,
     // 正常終了
-    SUCCESS;
+    SUCCESS,
+    //タイトル桁数チェックエラー
+    LENGTH_TITLE_ERROR, 
+    //内容桁数チェックエラー
+    LENGTH_CONTENT_ERROR;
 
 }

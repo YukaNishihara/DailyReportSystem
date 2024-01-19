@@ -2,10 +2,12 @@
 package com.techacademy.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.validator.constraints.Length;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import jakarta.persistence.OneToMany;
 
 @Data
 @Entity
@@ -34,6 +37,9 @@ public class Employee {
             return this.name;
         }
     }
+//    
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    private List<Report> reportList;
 
     // ID
     @Id
@@ -41,7 +47,9 @@ public class Employee {
     @NotEmpty
     @Length(max = 10)
     private String code;
-
+    
+    
+    
     // 名前
     @Column(length = 20, nullable = false)
     @NotEmpty
@@ -68,5 +76,7 @@ public class Employee {
     // 更新日時
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+    
+    
 
 }
