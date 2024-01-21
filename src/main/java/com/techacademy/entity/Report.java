@@ -42,11 +42,13 @@ public class Report {
 
     // タイトル
     @Column(length = 100, nullable = false)
+    @NotNull
     private String title;
 
     // 内容
     @Column(columnDefinition = "LONGTEXT", nullable = false)
     @Length(max = 600)
+    @NotNull
     private String content;
     
     //社員番号
