@@ -1,5 +1,6 @@
 package com.techacademy.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.techacademy.constants.ErrorKinds;
+import com.techacademy.constants.ErrorMessage;
 import com.techacademy.entity.Employee;
 import com.techacademy.entity.Employee.Role;
 import com.techacademy.entity.Report;
@@ -63,28 +66,48 @@ public class ReportController {
 //
 //    // 日報新規登録画面
     @GetMapping(value = "/add")
-    public String create(@ModelAttribute Report report) {
+    public String create( @ModelAttribute Report report,@AuthenticationPrincipal UserDetail userDetail,Model model) {
+        
+        
+            
+            String loggedInEmployeeName = userDetail.getEmployee().getName();
+            model.addAttribute("loggedInEmployeeName", loggedInEmployeeName);
        
-       
-       
+
+        
         return "reports/new";
     }
 //
 //    // 日報新規登録処理
     @PostMapping(value = "/add")
-    public String add(@Validated Report report, BindingResult res, Model model) {
-
-        
+    public String add(@Validated Report report,@AuthenticationPrincipal UserDetail userDetail, BindingResult res, Model model) {
 
         // 入力チェック
-        
         if (res.hasErrors()) {
             
-            return create(report);
+            return create(report, userDetail, model);
+        }
+        // タイトルの桁数チェック
+//        if (report.getTitle().length() > 100) {
+//            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.LENGTH_TITLE_ERROR), 
+//                    ErrorMessage.getErrorValue(ErrorKinds.LENGTH_TITLE_ERROR));
+//            return "reports/new";
+//        }
+//
+//        // 内容の桁数チェック
+//        if (report.getContent().length() > 600) {
+//            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.LENGTH_CONTENT_ERROR), 
+//                    ErrorMessage.getErrorValue(ErrorKinds.LENGTH_CONTENT_ERROR));
+//            return "reports/new";
+//        }
+      
+        ErrorKinds result = reportService.save(report);
+
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            return create(report, null, model);
         }
         
-        reportService.save(report);
-
         return "redirect:/reports";
     }
 
