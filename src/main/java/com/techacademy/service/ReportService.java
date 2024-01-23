@@ -1,6 +1,8 @@
 package com.techacademy.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ public class ReportService {
        
         report.setDeleteFlg(false);
         
+        
+      
+        
         //作成日時、更新日時
         LocalDateTime now = LocalDateTime.now();
         report.setCreatedAt(now);
@@ -47,6 +52,9 @@ public class ReportService {
     public List<Report> findAllByUser(Employee employee) {
         return reportRepository.findByEmployee(employee);
 
+    }
+    public List<Report> findByEmployeeAndReportDate(Employee employee,LocalDate reportDate){
+        return reportRepository.findByEmployeeAndReportDate(employee,reportDate);
     }
 
     // 1件を検索

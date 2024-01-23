@@ -1,11 +1,9 @@
 package com.techacademy.controller;
 
-import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -66,48 +64,45 @@ public class ReportController {
 //
 //    // 日報新規登録画面
     @GetMapping(value = "/add")
-    public String create( @ModelAttribute Report report,@AuthenticationPrincipal UserDetail userDetail,Model model) {
-        
-        
-            
-            String loggedInEmployeeName = userDetail.getEmployee().getName();
-            model.addAttribute("loggedInEmployeeName", loggedInEmployeeName);
-       
+    public String create(@ModelAttribute Report report, @AuthenticationPrincipal UserDetail userDetail, Model model) {
 
-        
+        String loggedInEmployeeName = userDetail.getEmployee().getName();
+        model.addAttribute("loggedInEmployeeName", loggedInEmployeeName);
+
         return "reports/new";
     }
+
 //
 //    // 日報新規登録処理
     @PostMapping(value = "/add")
-    public String add(@Validated Report report,@AuthenticationPrincipal UserDetail userDetail, BindingResult res, Model model) {
+    public String add(@Validated Report report, BindingResult res, @AuthenticationPrincipal UserDetail userDetail,
+            Model model) {
 
         // 入力チェック
         if (res.hasErrors()) {
-            
+
             return create(report, userDetail, model);
         }
-        // タイトルの桁数チェック
-//        if (report.getTitle().length() > 100) {
-//            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.LENGTH_TITLE_ERROR), 
-//                    ErrorMessage.getErrorValue(ErrorKinds.LENGTH_TITLE_ERROR));
-//            return "reports/new";
-//        }
+
+        Employee loggedInEmployeeCode = userDetail.getEmployee();
+        report.setEmployee(loggedInEmployeeCode);
+        
+        
+        List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode, report.getReportDate());
+       
+        if (!reports.isEmpty()) {
+            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR), ErrorMessage.getErrorValue(ErrorKinds.DATECHECK_ERROR));
+            return create(report, userDetail, model);
+        }
+
 //
-//        // 内容の桁数チェック
-//        if (report.getContent().length() > 600) {
-//            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.LENGTH_CONTENT_ERROR), 
-//                    ErrorMessage.getErrorValue(ErrorKinds.LENGTH_CONTENT_ERROR));
-//            return "reports/new";
-//        }
-      
         ErrorKinds result = reportService.save(report);
 
         if (ErrorMessage.contains(result)) {
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-            return create(report, null, model);
+            return create(report, userDetail, model);
         }
-        
+
         return "redirect:/reports";
     }
 
