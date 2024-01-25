@@ -56,11 +56,6 @@ public class ReportService {
     @Transactional
     public ErrorKinds delete(Integer id, UserDetail userDetail) {
 
-//       // 自分を削除しようとした場合はエラーメッセージを表示
-//       if (id.equals(userDetail.getEmployee().getCode())) {
-//           return ErrorKinds.LOGINCHECK_ERROR;
-//       }
-
         Report report = findById(id);
         LocalDateTime now = LocalDateTime.now();
         report.setUpdatedAt(now);

@@ -126,28 +126,19 @@ public class EmployeeController {
     @PostMapping(value = "/{code}/update")
     public String update(@PathVariable String code, @Validated Employee employee, BindingResult res, Model model) {
 
-
-
-        
-
         // 入力チェック
         if (res.hasErrors()) {
             return "employees/update";
         }
-     
-        
-            ErrorKinds result = employeeService.update(employee);
 
-            if (ErrorMessage.contains(result)) {
-                model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-                return "employees/update";
-            }
+        ErrorKinds result = employeeService.update(employee);
 
-   
-       
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            return "employees/update";
+        }
 
         return "redirect:/employees";
     }
 
-       
 }
