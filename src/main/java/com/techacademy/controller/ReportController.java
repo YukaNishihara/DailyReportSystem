@@ -63,7 +63,7 @@ public class ReportController {
         return "reports/detail";
     }
 
-//    // 日報新規登録画面
+    // 日報新規登録画面
     @GetMapping(value = "/add")
     public String create(@ModelAttribute Report report, @AuthenticationPrincipal UserDetail userDetail, Model model) {
 
@@ -87,12 +87,12 @@ public class ReportController {
 
         Employee loggedInEmployeeCode = userDetail.getEmployee();
         report.setEmployee(loggedInEmployeeCode);
-        
-        
+
         List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode, report.getReportDate());
-       
+
         if (!reports.isEmpty()) {
-            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR), ErrorMessage.getErrorValue(ErrorKinds.DATECHECK_ERROR));
+            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR),
+                    ErrorMessage.getErrorValue(ErrorKinds.DATECHECK_ERROR));
             return create(report, userDetail, model);
         }
 
@@ -107,7 +107,7 @@ public class ReportController {
         return "redirect:/reports";
     }
 
-    // 従業員削除処理
+    // 削除処理
     @PostMapping(value = "/{id}/delete")
     public String delete(@PathVariable Integer id, @AuthenticationPrincipal UserDetail userDetail, Model model) {
 
@@ -117,6 +117,55 @@ public class ReportController {
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
             model.addAttribute("report", reportService.findById(id));
             return detail(id, model);
+        }
+
+        return "redirect:/reports";
+    }
+
+    // 更新画面
+    @GetMapping(value = "/{id}/update")
+    public String update(@PathVariable Integer id, @AuthenticationPrincipal UserDetail userDetail, Model model,
+            Report rep) {
+
+        String loggedInEmployeeName = userDetail.getEmployee().getName();
+        model.addAttribute("loggedInEmployeeName", loggedInEmployeeName);
+
+        if (id != null) {
+            Report report = reportService.findById(id);
+            model.addAttribute("report", report);
+        } else {
+            model.addAttribute("report", rep);
+        }
+        return "reports/update";
+    }
+
+    // 更新処理
+    @PostMapping(value = "/{id}/update")
+    public String update(@PathVariable Integer id, @Validated Report report, BindingResult res,
+            @AuthenticationPrincipal UserDetail userDetail, Model model) {
+        // 入力チェック
+        if (res.hasErrors()) {
+
+            return update(null, userDetail, model, report);
+        }
+
+        Employee loggedInEmployeeCode = userDetail.getEmployee();
+        report.setEmployee(loggedInEmployeeCode);
+
+        List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode, report.getReportDate());
+
+        if (!reports.isEmpty()) {
+            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR),
+                    ErrorMessage.getErrorValue(ErrorKinds.DATECHECK_ERROR));
+            return update(id, userDetail, model,report);
+        }
+
+//
+        ErrorKinds result = reportService.update(report);
+
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            return update(id, userDetail, model,report);
         }
 
         return "redirect:/reports";

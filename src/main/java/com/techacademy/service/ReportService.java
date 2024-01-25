@@ -22,39 +22,52 @@ public class ReportService {
         this.reportRepository = reportRepository;
 
     }
+
     // 新規登録
-   @Transactional
+    @Transactional
     public ErrorKinds save(Report report) {
-        
-       
+
         report.setDeleteFlg(false);
-        
-        //作成日時、更新日時
+
+        // 作成日時、更新日時
         LocalDateTime now = LocalDateTime.now();
         report.setCreatedAt(now);
         report.setUpdatedAt(now);
-        
-    
+
         reportRepository.save(report);
         return ErrorKinds.SUCCESS;
     }
-   // 日報削除
-   @Transactional
-   public ErrorKinds delete(Integer id, UserDetail userDetail) {
+
+    // 更新
+    public ErrorKinds update(Report report) {
+
+        report.setDeleteFlg(false);
+
+        // 作成日時、更新日時
+        LocalDateTime now = LocalDateTime.now();
+        report.setCreatedAt(now);
+        report.setUpdatedAt(now);
+
+        reportRepository.save(report);
+        return ErrorKinds.SUCCESS;
+    }
+
+    // 日報削除
+    @Transactional
+    public ErrorKinds delete(Integer id, UserDetail userDetail) {
 
 //       // 自分を削除しようとした場合はエラーメッセージを表示
 //       if (id.equals(userDetail.getEmployee().getCode())) {
 //           return ErrorKinds.LOGINCHECK_ERROR;
 //       }
-      
-       
-       Report report = findById(id);
-       LocalDateTime now = LocalDateTime.now();
-       report.setUpdatedAt(now);
-       report.setDeleteFlg(true);
 
-       return ErrorKinds.SUCCESS;
-   }
+        Report report = findById(id);
+        LocalDateTime now = LocalDateTime.now();
+        report.setUpdatedAt(now);
+        report.setDeleteFlg(true);
+
+        return ErrorKinds.SUCCESS;
+    }
 
     // 日報一覧表示処理
     public List<Report> findAll() {
@@ -66,8 +79,9 @@ public class ReportService {
         return reportRepository.findByEmployee(employee);
 
     }
-    public List<Report> findByEmployeeAndReportDate(Employee employee,LocalDate reportDate){
-        return reportRepository.findByEmployeeAndReportDate(employee,reportDate);
+
+    public List<Report> findByEmployeeAndReportDate(Employee employee, LocalDate reportDate) {
+        return reportRepository.findByEmployeeAndReportDate(employee, reportDate);
     }
 
     // 1件を検索
