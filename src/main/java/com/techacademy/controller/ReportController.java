@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -55,13 +56,13 @@ public class ReportController {
     }
 
 //    // 日報詳細画面
-//    @GetMapping(value = "/{id}/")
-//    public String detail(@PathVariable String id, Model model) {
-//
-//        model.addAttribute("report", reportService.findByCode(code));
-//        return "reports/detail";
-//    }
-//
+    @GetMapping(value = "/{id}/")
+    public String detail(@PathVariable Integer id, Model model) {
+
+        model.addAttribute("report", reportService.findById(id));
+        return "reports/detail";
+    }
+
 //    // 日報新規登録画面
     @GetMapping(value = "/add")
     public String create(@ModelAttribute Report report, @AuthenticationPrincipal UserDetail userDetail, Model model) {
@@ -107,17 +108,17 @@ public class ReportController {
     }
 
     // 従業員削除処理
-//    @PostMapping(value = "/{id}/delete")
-//    public String delete(@PathVariable String id, @AuthenticationPrincipal UserDetail userDetail, Model model) {
-//
-//        ErrorKinds result = reportService.delete(id, userDetail);
-//
-//        if (ErrorMessage.contains(result)) {
-//            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-//            model.addAttribute("report", reportService.findByCode(id));
-//            return detail(id, model);
-//        }
-//
-//        return "redirect:/reports";
-//    }
+    @PostMapping(value = "/{id}/delete")
+    public String delete(@PathVariable Integer id, @AuthenticationPrincipal UserDetail userDetail, Model model) {
+
+        ErrorKinds result = reportService.delete(id, userDetail);
+
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            model.addAttribute("report", reportService.findById(id));
+            return detail(id, model);
+        }
+
+        return "redirect:/reports";
+    }
 }

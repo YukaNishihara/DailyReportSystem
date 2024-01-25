@@ -2,7 +2,6 @@ package com.techacademy.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +29,6 @@ public class ReportService {
        
         report.setDeleteFlg(false);
         
-        
-      
-        
         //作成日時、更新日時
         LocalDateTime now = LocalDateTime.now();
         report.setCreatedAt(now);
@@ -42,6 +38,23 @@ public class ReportService {
         reportRepository.save(report);
         return ErrorKinds.SUCCESS;
     }
+   // 日報削除
+   @Transactional
+   public ErrorKinds delete(Integer id, UserDetail userDetail) {
+
+//       // 自分を削除しようとした場合はエラーメッセージを表示
+//       if (id.equals(userDetail.getEmployee().getCode())) {
+//           return ErrorKinds.LOGINCHECK_ERROR;
+//       }
+      
+       
+       Report report = findById(id);
+       LocalDateTime now = LocalDateTime.now();
+       report.setUpdatedAt(now);
+       report.setDeleteFlg(true);
+
+       return ErrorKinds.SUCCESS;
+   }
 
     // 日報一覧表示処理
     public List<Report> findAll() {
