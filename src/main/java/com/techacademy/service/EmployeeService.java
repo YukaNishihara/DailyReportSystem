@@ -71,9 +71,11 @@ public class EmployeeService {
         }
 
      employee.setDeleteFlg(false);
+     //登録日は既存のもの
+     Employee existingEmployee = findByCode(employee.getCode());
+     employee.setCreatedAt(existingEmployee.getCreatedAt());
 
         LocalDateTime now = LocalDateTime.now();
-        employee.setCreatedAt(now);
         employee.setUpdatedAt(now);
 
         employeeRepository.save(employee);

@@ -42,10 +42,13 @@ public class ReportService {
     public ErrorKinds update(Report report) {
 
         report.setDeleteFlg(false);
+        
+        //作成日時は既存
+        Report existingReport = findById(report.getId());
+        report.setCreatedAt(existingReport.getCreatedAt());
 
         // 作成日時、更新日時
         LocalDateTime now = LocalDateTime.now();
-        report.setCreatedAt(now);
         report.setUpdatedAt(now);
 
         reportRepository.save(report);
