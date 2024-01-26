@@ -152,12 +152,21 @@ public class ReportController {
         Employee loggedInEmployeeCode = userDetail.getEmployee();
         report.setEmployee(loggedInEmployeeCode);
 
-        List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode, report.getReportDate());
+        // 更新前と更新後同じ日付
+        Report existingReport = reportService.findById(id);
+        if (existingReport != null && existingReport.getReportDate().equals(report.getReportDate())) {
+            // エラー出さない
+            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR), null);
+        } else {
+            //登録ずみの日付の場合
+            List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode,
+                    report.getReportDate());
 
-        if (!reports.isEmpty()) {
-            model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR),
-                    ErrorMessage.getErrorValue(ErrorKinds.DATECHECK_ERROR));
-            return update(id, userDetail, model,report);
+            if (!reports.isEmpty()) {
+                model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR),
+                        ErrorMessage.getErrorValue(ErrorKinds.DATECHECK_ERROR));
+                return update(id, userDetail, model, report);
+            }
         }
 
 //
@@ -165,7 +174,7 @@ public class ReportController {
 
         if (ErrorMessage.contains(result)) {
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-            return update(id, userDetail, model,report);
+            return update(id, userDetail, model, report);
         }
 
         return "redirect:/reports";
