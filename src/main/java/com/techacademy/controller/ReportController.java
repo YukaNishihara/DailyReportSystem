@@ -55,14 +55,38 @@ public class ReportController {
         return "reports/list";
     }
 
-//    // 日報詳細画面
-    @GetMapping(value = "/{id}/")
-    public String detail(@PathVariable Integer id, Model model) {
+    // 警告画面
+    @GetMapping(value = "/caution")
+    public String caution() {
+        return "reports/caution";
 
-        model.addAttribute("report", reportService.findById(id));
-        return "reports/detail";
     }
 
+//    // 日報詳細画面
+    @GetMapping(value = "/{id}/")
+    public String detail(@PathVariable Integer id, Model model, @AuthenticationPrincipal UserDetail principal) {
+
+        Employee loggedInUser = principal.getEmployee();
+        Report report = reportService.findById(id);
+
+        // 削除済みの日報にアクセスしようとした場合
+        if (report == null) {
+            return "redirect:/reports/caution";
+        }
+
+        //管理者または一般ユーザーかつコードが同一のユーザーが作成した日報の場合
+        if (loggedInUser.getRole() == Role.ADMIN || (loggedInUser.getRole() != Role.ADMIN
+                && report.getEmployee().getCode().equals(loggedInUser.getCode()))) {
+            // 自分の日報なのでdetail画面に遷移
+            model.addAttribute("report", report);
+            return "reports/detail";
+        } else {
+
+            return "redirect:/reports/caution";
+
+        }
+
+    }
     // 日報新規登録画面
     @GetMapping(value = "/add")
     public String create(@ModelAttribute Report report, @AuthenticationPrincipal UserDetail userDetail, Model model) {
@@ -116,7 +140,7 @@ public class ReportController {
         if (ErrorMessage.contains(result)) {
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
             model.addAttribute("report", reportService.findById(id));
-            return detail(id, model);
+            return detail(id, model, userDetail);
         }
 
         return "redirect:/reports";
@@ -158,7 +182,7 @@ public class ReportController {
             // エラー出さない
             model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR), null);
         } else {
-            //登録ずみの日付の場合
+            // 登録ずみの日付の場合
             List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode,
                     report.getReportDate());
 
