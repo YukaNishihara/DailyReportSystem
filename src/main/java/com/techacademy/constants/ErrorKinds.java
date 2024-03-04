@@ -25,6 +25,8 @@ public enum ErrorKinds {
     //タイトル桁数チェックエラー
     LENGTH_TITLE_ERROR, 
     //内容桁数チェックエラー
-    LENGTH_CONTENT_ERROR;
+    LENGTH_CONTENT_ERROR,
+    //検索チェックエラー
+    QUERYCHECK_ERROR;
 
 }

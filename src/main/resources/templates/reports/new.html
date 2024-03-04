@@ -26,7 +26,7 @@
                                         <p class="mb-1"></p>
                                         <div class="col-md-7">
                                             <input type="date" id="reportDate" name="reportDate"
-                                                th:placeholder="#{年/月/日}" />
+                                                th:placeholder="#{年/月/日}">
                                             <span th:errors="*{reportDate}" class="text-danger"></span> <span
                                                 th:if="${reportDateError} neq null" th:text="${reportDateError}"
                                                 class="text-danger"></span>

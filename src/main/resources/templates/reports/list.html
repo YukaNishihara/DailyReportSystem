@@ -17,6 +17,32 @@
                     <div class="col-xl-11">
                         <div class="card">
                             <div class="card-body">
+                                <!-- 検索フォーム -->
+                                <form th:action="@{/reports}" method="get">
+                                    <div style="display: flex">
+                                        <table border="1">
+                                            <tr>
+                                                <th>日付</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input type="date" id="startDate" name="startDate" th:value="*{reportQuery.startDate}"
+                                                        th:placeholder="#{年/月/日}">
+                                                    〜
+                                                    <input type="date" id="endDate" name="endDate"
+                                                        th:placeholder="#{年/月/日}">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <button type="submit">検索</button>
+                                    </div>
+                                </form>
+                                <!-- 検索フォーム -->
+                                <!-- エラーメッセージ -->
+                                <span th:errors="*{reportQuery}" class="text-danger"></span>
+                                <span th:if="${reportQueryError} != null" th:text="${reportQueryError}"
+                                    class="text-danger"></span>
+                                <!-- エラーメッセージ -->
                                 <table class="table table-striped w-100">
                                     <thead>
                                         <tr>
@@ -29,15 +55,62 @@
                                     <tbody>
                                         <tr th:each="report:${reportList}">
                                             <td class="align-middle" th:text="${report.employee.name}"></td>
-                                           <td th:text="${#temporals.format(report.reportDate, 'yyyy-MM-dd')}"></td>
+                                            <td th:text="${#temporals.format(report.reportDate, 'yyyy-MM-dd')}">
+                                            </td>
                                             <td class="align-middle" th:text="${report.title}"></td>
-                                            <td class="align-middle"><a th:href="@{/reports/{id}/(id=${report.id})}" class="btn btn-primary">詳細</a></td>
+                                            <td class="align-middle"><a th:href="@{/reports/{id}/(id=${report.id})}"
+                                                    class="btn btn-primary">詳細</a></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                         <p class="mb-3" th:text="'（ 全' + ${listSize} + '件 ）'">
+                        <nav aria-label="Pagination" th:if="${page.totalPages > 0}">
+                            <!-- ページングリンク -->
+                            <div th:if="${page.totalPages > 1}" class="d-flex justify-content-center mt-3">
+                                <ul class="pagination">
+                                    <!-- 前へのページ -->
+                                    <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                                        <a th:replace="fragments/paging :: paging('/reports',${page.number - 1}, ${reportQuery},'&laquo;前へ')"
+                                            class="page-link" th:tabindex="${page.first} ? -1" aria-label="Previous">
+                                        </a>
+                                    </li>
+                                    <!-- 最初のページ -->
+                                    <li th:if="${page.number gt 2}" class="page-item">
+                                        <a th:replace="fragments/paging :: paging('/reports', 0, ${reportQuery}, '1')"
+                                            class="page-link">1</a>
+                                    </li>
+                                    <!-- 中間のページ -->
+                                    <li th:each="i: ${#numbers.sequence(page.number - 2, page.number + 2)}"
+                                        th:if="${i ge 0 and i lt page.totalPages}"
+                                        th:class="${page.number == i} ? 'page-item active' : 'page-item'">
+                                        <a th:replace="fragments/paging :: paging('/reports', ${i}, ${reportQuery}, ${i + 1})"
+                                            class="page-link"></a>
+                                    </li>
+                                    <!--/* … */-->
+                                    <li th:if="${page.totalPages gt (page.number + 4)}" class="page-item disabled">
+                                        <a th:replace="fragments/paging :: paging('/reports', ${page.number + 4}, ${reportQuery}, '...')"
+                                            class="page-link"></a>
+                                    </li>
+                                    <!-- 最後のページ -->
+                                    <li th:if="${page.totalPages gt (page.number + 3)}" class="page-item">
+                                        <a th:replace="fragments/paging :: paging('/reports', ${page.totalPages - 1}, ${reportQuery}, ${page.totalPages})"
+                                            class="page-link"></a>
+                                    </li>
+                                    <!-- 次へのページ -->
+                                    <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                                        <a th:if="${!page.last}"
+                                            th:replace="fragments/paging :: paging('/reports', ${page.number + 1}, ${reportQuery}, '&raquo;次へ')"
+                                            class="page-link" th:tabindex="${page.last} ? -1" aria-label="Next">
+                                        </a>
+                                    </li>
+                                    
+                                </ul>
+                            </div>
+
+                            <!-- ページングリンク -->
+                        </nav>
                         <div>
                             <a th:href="@{/reports/add}" class="btn btn-primary">登録</a>
                         </div>
