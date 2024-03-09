@@ -38,9 +38,4 @@ public class ReportSpecification<T> {
             }
         };
     }
-
-//    public Specification<Report> findReportsForUser(Employee loggedInUser) {
-//        // TODO 自動生成されたメソッド・スタブ
-//        return null;
-//    }
 }
