@@ -3,6 +3,9 @@ package com.techacademy.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +16,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.techacademy.constants.ErrorKinds;
 import com.techacademy.constants.ErrorMessage;
 import com.techacademy.entity.Employee;
@@ -21,6 +23,8 @@ import com.techacademy.entity.Employee.Role;
 import com.techacademy.entity.Report;
 import com.techacademy.service.ReportService;
 import com.techacademy.service.UserDetail;
+
+import form.ReportQuery;
 
 @Controller
 @RequestMapping("reports")
@@ -35,32 +39,53 @@ public class ReportController {
 
     // 日報一覧画面
     @GetMapping({ "", "/" })
-    // 認証されたユーザーのUserDetail取得
-    public String getReports(Model model, @AuthenticationPrincipal UserDetail principal) {
+    public String getReports(Model model, @AuthenticationPrincipal UserDetail principal,
+            @PageableDefault(page = 0, size = 1, sort = "createdAt") Pageable pageable,
+            @ModelAttribute ReportQuery reportQuery) {
 
         Employee loggedInUser = principal.getEmployee();
 
-        List<Report> reports = null;
+        Page<Report> reportPage;
+        reportPage = reportService.getSearchReports(reportQuery, loggedInUser, pageable);
 
-        // 権限に基づいて適切な日報情報を取得
-        if (loggedInUser.getRole() == Role.ADMIN) {
-            reports = reportService.findAll();
-        } else {
-            reports = reportService.findAllByUser(loggedInUser);
-        }
-
-        model.addAttribute("listSize", reports.size());
-        model.addAttribute("reportList", reports);
-
+        model.addAttribute("reportList", reportPage.getContent());
+        model.addAttribute("reportQuery", reportQuery);
+        model.addAttribute("page", reportPage);
+        model.addAttribute("listSize", reportPage.getTotalElements());
         return "reports/list";
+    }
+
+    // 警告画面
+    @GetMapping(value = "/caution")
+    public String caution() {
+        return "reports/caution";
+
     }
 
 //    // 日報詳細画面
     @GetMapping(value = "/{id}/")
-    public String detail(@PathVariable Integer id, Model model) {
+    public String detail(@PathVariable Integer id, Model model, @AuthenticationPrincipal UserDetail principal) {
 
-        model.addAttribute("report", reportService.findById(id));
-        return "reports/detail";
+        Employee loggedInUser = principal.getEmployee();
+        Report report = reportService.findById(id);
+
+        // 削除済みの日報にアクセスしようとした場合
+        if (report == null) {
+            return "redirect:/reports/caution";
+        }
+
+        // 管理者または一般ユーザーかつコードが同一のユーザーが作成した日報の場合
+        if (loggedInUser.getRole() == Role.ADMIN || (loggedInUser.getRole() != Role.ADMIN
+                && report.getEmployee().getCode().equals(loggedInUser.getCode()))) {
+            // 自分の日報なのでdetail画面に遷移
+            model.addAttribute("report", report);
+            return "reports/detail";
+        } else {
+
+            return "redirect:/reports/caution";
+
+        }
+
     }
 
     // 日報新規登録画面
@@ -73,7 +98,7 @@ public class ReportController {
         return "reports/new";
     }
 
-//
+
 //    // 日報新規登録処理
     @PostMapping(value = "/add")
     public String add(@Validated Report report, BindingResult res, @AuthenticationPrincipal UserDetail userDetail,
@@ -116,7 +141,7 @@ public class ReportController {
         if (ErrorMessage.contains(result)) {
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
             model.addAttribute("report", reportService.findById(id));
-            return detail(id, model);
+            return detail(id, model, userDetail);
         }
 
         return "redirect:/reports";
@@ -158,7 +183,7 @@ public class ReportController {
             // エラー出さない
             model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DATECHECK_ERROR), null);
         } else {
-            //登録ずみの日付の場合
+            // 登録ずみの日付の場合
             List<Report> reports = reportService.findByEmployeeAndReportDate(loggedInEmployeeCode,
                     report.getReportDate());
 
@@ -169,7 +194,7 @@ public class ReportController {
             }
         }
 
-//
+
         ErrorKinds result = reportService.update(report);
 
         if (ErrorMessage.contains(result)) {

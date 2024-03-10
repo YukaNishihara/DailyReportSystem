@@ -57,7 +57,7 @@ public class Report {
 //    @NotEmpty
 //    @Length(max = 10)
 //    private String employeeCode;
-    
+//    
 
     // 削除フラグ(論理削除を行うため)
     @Column(columnDefinition="TINYINT", nullable = false)

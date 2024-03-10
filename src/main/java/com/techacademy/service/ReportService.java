@@ -5,12 +5,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.techacademy.constants.ErrorKinds;
 import com.techacademy.entity.Employee;
 import com.techacademy.entity.Report;
+import com.techacademy.entity.ReportSpecification;
 import com.techacademy.repository.ReportRepository;
+
+import form.ReportQuery;
 
 @Service
 public class ReportService {
@@ -90,5 +96,40 @@ public class ReportService {
         Report report = option.orElse(null);
         return report;
     }
+    
+ // ページングで全ての日報を取得
+    public Page<Report> findAll(Pageable pageable) {
+        return reportRepository.findAll(pageable);
+    }
+
+    // ページングで特定の従業員の日報を取得
+    public Page<Report> findAllByUser(Employee employee, Pageable pageable) {
+        return reportRepository.findByEmployee(employee, pageable);
+    }
+    
+    // 指定された期間内のレポートを取得するメソッド
+    public Page<Report> searchByQuery(ReportQuery reportQuery, Pageable pageable) {
+        return reportRepository.findByReportDateBetweenOrderByReportDateAsc(reportQuery.getStartDate(),reportQuery.getEndDate(), pageable);
+    }
+  //追加
+    public Page<Report> searchByStartDateAfter(ReportQuery reportQuery, Pageable pageable) {
+        return reportRepository.findByCreatedAtAfterOrderByCreatedAtAsc(reportQuery.getStartDate(), pageable);
+    }
+
+    public Page<Report> searchByEndDateBefore(ReportQuery reportQuery, Pageable pageable) {
+        return reportRepository.findByCreatedAtBeforeOrderByCreatedAtAsc(reportQuery.getEndDate(), pageable);
+    }
+    public Page<Report> getSearchReports(ReportQuery reportQuery,Employee loggedInUser ,Pageable pageable) {
+
+        
+        ReportSpecification<Report> spec = new ReportSpecification<>();
+
+        return reportRepository.findAll(
+                Specification.where(spec.reportDateGreaterThanEqual(reportQuery.getStartDate()))
+                    .and(spec.reportDateLessThanEqual(reportQuery.getEndDate()))
+                    .and(spec.findReportsForUser(loggedInUser))
+                ,pageable);
+    }
+   
 
 }

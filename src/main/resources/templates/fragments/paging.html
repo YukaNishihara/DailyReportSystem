@@ -1,0 +1,5 @@
+<a th:fragment="paging(url,pageNum, reportQuery,label)" class="page-link"
+   th:href="@{${url}(page=${pageNum},startDate=${reportQuery.startDate},endDate=${reportQuery.endDate})}"
+   >
+    [[${label}]]
+</a>
