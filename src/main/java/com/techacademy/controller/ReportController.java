@@ -40,7 +40,7 @@ public class ReportController {
     // 日報一覧画面
     @GetMapping({ "", "/" })
     public String getReports(Model model, @AuthenticationPrincipal UserDetail principal,
-            @PageableDefault(page = 0, size = 1, sort = "createdAt") Pageable pageable,
+            @PageableDefault(page = 0, size = 5, sort = "createdAt") Pageable pageable,
             @ModelAttribute ReportQuery reportQuery) {
 
         Employee loggedInUser = principal.getEmployee();
